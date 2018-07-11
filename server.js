@@ -1,39 +1,61 @@
+var app=require('express')();
 var request=require('request');
 var querystring=require('querystring');
-var express=require('express');
 var redis=require('redis');
 var crypto=require('crypto');
 var bodyParser=require('body-parser');
+var config=require('./config');
+var fs=require('fs');
+var http=require('http');
+var https=require('https');
+
+//读取https证书
+var privateKey=fs.readFileSync('./private.pem', 'utf8');
+var certificate=fs.readFileSync('./file.crt', 'utf8');
+var credentials={key: privateKey, cert: certificate};
 //连接redis
-var PORT=6379;
-var HOST='127.0.0.1';
-var PASSWD='123456';
-var OPTS={auth_pass : PASSWD};
-var redisStore=redis.createClient(PORT, HOST, OPTS);
+var opts={auth_pass : config.redisPasswd};
+var redisStore=redis.createClient(config.redisPort, config.redisHost, opts);
 redisStore.on('connect', function(){
 	console.log('redis connect successful');
 });
 //使用JSON解析工具
-var app=express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+//开启监听
+var httpServer=http.createServer(app);
+var httpsServer=https.createServer(credentials, app);
+httpServer.listen(config.httpPort, function(){
+	console.log('HTTP server is running on http://localhost:%s', config.httpPort);
+});
+httpsServer.listen(config.httpsPort, function(){
+	console.log('HTTPS server is running on https://localhost:%s', config.httpsPort);
+});
+app.get('/', function(req, res){
+	let code=req.query.code;
+	console.log('code:'+code);
+	if(req.protocol==='https'){
+		res.status(200).json({code:code});
+	}else{
+		res.status(200).send('Welcome, this is HTTP!');
+	}
+});
 //监听登录请求
 app.get('/onLogin', function(req, res){
 	let code=req.query.code;
 	console.log("onLogin: code:"+code);
 
 	var getData=querystring.stringify({
-		appid:'wx9d86fb50c899df5a',
-		secret:'12345',
+		appid: config.appid,
+		secret: config.secret,
 		js_code:code,
 		grant_type:'authorization_code'
 	});
-	var address="http://127.0.0.1:8889/onLogin2";
-	var url=address+"?"+getData;
+	var url=config.wxAddress+"?"+getData;
 	var session_id="";
-	request.get(url, function(err, res){
-		if(!err && res.statusCode===200){
-			var json=JSON.parse(res.body);
+	request.get(url, function(err, req){
+		if(!err && req.statusCode===200){
+			var json=JSON.parse(req.body);
 			var openid=json.openid;
 			var session_key=json.session_key;
 			console.log('openid:'+openid);
@@ -46,51 +68,13 @@ app.get('/onLogin', function(req, res){
 			//将session_id存入redis并设置超时时间为30分钟
 			redisStore.set(session_id, openid+session_key);
 			redisStore.expire(session_id, 1800);
+			//将session_id传递给客户端
+			res.set("Content-Type", "application/json");
+			res.json({sessionid: session_id});
 		}else{
 			console.log(err);
-			//res.json(err);
 		}
 	});
-	//将session_id传递给客户端
-	res.json({sessionid: session_id});
-	//request({
-	//	//uri: 'https://api.weixin.qq.com/sns/jscode2session',
-	//	uri: 'http://127.0.0.1:8889/onLogin2',
-	//	method: 'GET',
-	//	json :{
-	//		grant_type: 'authorization_code',
-	//		//填上自己的appid和secret
-	//		appid: 'wx9d86fb50c899df5a',
-	//		secret: '12345',
-	//		js_code: code
-	//	}
-	//}, function(err, res, data){
-	//	if(!err && res.statusCode===200){
-	//		console.log('openid:'+data.openid);
-	//		console.log('session_key:'+data.session_key);
-	//		//根据openid和session_key用md5算法生成session_id
-	//		var hash=crypto.createHash('md5');
-	//		hash.update(data.openid);
-	//		var session_id=hash.digest('hex');
-	//		//将session_id存入redis并设置超时时间为30分钟
-	//		redisStore.set(session_id, openid+session_key);
-	//		redisStore.expire(session_id, 1800);
-	//		//将session_id传递给客户端
-	//		res.json({sessionid: session_id});
-	//	}else{
-	//		console.log(err);
-	//		res.json(err);
-	//	}
-	//});
-});
-app.get('/onLogin2', function(req, res){
-	let code=req.js_code;
-	let appid=req.appid;
-	let secret=req.secret;
-	console.log('onLogin2: code is:'+code);
-	console.log('onLogin2: appid is:'+appid);
-	console.log('onLogin2: secret is:'+secret);
-	req.json({openid:'abcdefg', session_key:'ABCDEFG'});
 });
 app.get('/products', function(req, res){
 	let session_id=req.header('sessionid');
@@ -100,9 +84,4 @@ app.get('/products', function(req, res){
 	}else{
 		console.log('session_id is ok');
 	}
-});
-var server=app.listen(8888, function(){
-	var host=server.address().address;
-	var port=server.address().port;
-	console.log('address is http://%s:%s', host, port);
 });
