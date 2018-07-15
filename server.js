@@ -80,80 +80,57 @@ app.get('/', function(req, res){
 		res.status(200).send('Welcome, this is HTTP!');
 	}
 });
-app.get('/products', function(req, res){
-	let session_id=req.header('sessionid');
-	let session_val=redisStore.get(session_id);
-	if(session_val){
-		console.log('session_id is not ok');
-	}else{
-		console.log('session_id is ok');
-	}
-});
-app.get('/insertToMysql', function(req, res){
-	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
-		if(err){
-			return console.error(err);
-		}
-		request({
-			url: config.serverAddress,
-			method: 'POST',
-			json: true,
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.parse(data.toString())
-		}, function(err, response, body){
-			if(!err && response.statusCode==200){
-				res.json(body);
-			}else{
-				console.error('err:'+err);
-			}
-		});
-	});
-});
-app.get('/GetBankList', function(req, res){
-	let session_id=req.query.sessionid;
-	let session_val=redisStore.get(session_id);
+var handleFun=function(req, res){
+	var path=req.path;
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.sessionid;
+	if(session_id)session_val=redisStore.get(session_id);
 	if(session_val){
 		request({
 			url: config.serverAddress,
 			method: 'POST',
 			json: true,
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type':'application/json'
 			},
-			body: {"Action":"GetBankList"}
+			body: {"Action" : path.substring(1, path.length)}
 		}, function(err, response, body){
 			if(!err && response.statusCode==200){
 				res.json(body);
 			}else{
-				console.error('err:'+err);
+				res.json({error: err});
+				console.log('error:'+err);
 			}
 		});
 	}else{
-		res.json({warning: 'sessionid is invalid'});
+		console.log('sessionid is invalid');
+		res.json({warning: 'sessionid is invalid, please login again.'});
 	}
-});
-app.get('/GetProductsInfoList', function(req, res){
-	let session_id=req.query.sessionid;
-	let session_val=redisStore.get(session_id);
-	if(session_val){
-		request({
-			url: config.serverAddress,
-			method: 'POST',
-			json: true,
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: {"Action": "GetBankList"}
-		}, function(err, response, body){
-			if(!err && response.statusCode==200){
-				res.json(body);
-			}else{
-				console.error('err:'+err);
-			}
-		});
-	}else{
-		res.json({warning: 'sessionid is invalid'});
-	}
-});
+}
+app.get('/GetBankList', handleFun);
+app.get('/GetProductsInfoList', handleFun);
+//app.get('/OperateProduct', handleFun);
+//app.get('/insertToMysql', function(req, res){
+//	console.log('/insertToMysql');
+//	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
+//		if(err){
+//			return console.error(err);
+//		}
+//		request({
+//			url: config.serverAddress,
+//			method: 'POST',
+//			json: true,
+//			headers: {
+//				'Content-Type': 'application/json'
+//			},
+//			body: JSON.parse(data.toString())
+//		}, function(err, response, body){
+//			if(!err && response.statusCode==200){
+//				res.json(body);
+//			}else{
+//				console.error('err:'+err);
+//			}
+//		});
+//	});
+//});
