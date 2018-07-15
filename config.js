@@ -1,15 +1,15 @@
 var config={
 	port:8888,
-	httpPort:18080,
-	httpsPort:18081,
+	httpPort:10002,
+	httpsPort:10001,
 	//redis配置
 	redisPort:6379,
 	redisHost:'127.0.0.1',
 	redisPasswd:'123456',
 	//微信小程序配置
 	appid:'wx9d86fb50c899df5a',
-	secret:'12345',
-	wxAddress:'https://127.0.0.1:8889/onLogin2'
+	secret:'1dc57f86cd8a80d3b592d5630513d8f8',
+	wxAddress:'https://api.weixin.qq.com/sns/jscode2session'
 	
 }
 module.exports=config;

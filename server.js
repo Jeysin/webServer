@@ -23,11 +23,11 @@ redisStore.on('connect', function(){
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 //开启监听
-var httpServer=http.createServer(app);
+//var httpServer=http.createServer(app);
+//httpServer.listen(config.httpPort, function(){
+//	console.log('HTTP server is running on http://localhost:%s', config.httpPort);
+//});
 var httpsServer=https.createServer(credentials, app);
-httpServer.listen(config.httpPort, function(){
-	console.log('HTTP server is running on http://localhost:%s', config.httpPort);
-});
 httpsServer.listen(config.httpsPort, function(){
 	console.log('HTTPS server is running on https://localhost:%s', config.httpsPort);
 });
@@ -58,19 +58,23 @@ app.get('/onLogin', function(req, res){
 			var json=JSON.parse(req.body);
 			var openid=json.openid;
 			var session_key=json.session_key;
-			console.log('openid:'+openid);
-			console.log('session_key:'+session_key);
-			//根据openid和session_key用md5算法生成session_id
-			var hash=crypto.createHash('md5');
-			hash.update(openid+session_key);
-			session_id=hash.digest('hex');
-			console.log('session_id:'+session_id);
-			//将session_id存入redis并设置超时时间为30分钟
-			redisStore.set(session_id, openid+session_key);
-			redisStore.expire(session_id, 1800);
-			//将session_id传递给客户端
-			res.set("Content-Type", "application/json");
-			res.json({sessionid: session_id});
+			console.log('openid: '+openid);
+			console.log('session_key: '+session_key);
+			if(openid && session_key){
+				//根据openid和session_key用md5算法生成session_id
+				var hash=crypto.createHash('md5');
+				hash.update(openid+session_key);
+				session_id=hash.digest('hex');
+				console.log('session_id:'+session_id);
+				//将session_id存入redis并设置超时时间为30分钟
+				redisStore.set(session_id, openid+":"+session_key);
+				redisStore.expire(session_id, 1800);
+				将session_id传递给客户端
+				res.set("Content-Type", "application/json");
+				res.json({sessionid: session_id});
+			}else{
+				res.json({warning: 'code is invalid'});
+			}
 		}else{
 			console.log(err);
 		}
