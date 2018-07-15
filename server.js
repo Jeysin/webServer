@@ -31,15 +31,6 @@ var httpsServer=https.createServer(credentials, app);
 httpsServer.listen(config.httpsPort, function(){
 	console.log('HTTPS server is running on https://localhost:%s', config.httpsPort);
 });
-app.get('/', function(req, res){
-	let code=req.query.code;
-	console.log('code:'+code);
-	if(req.protocol==='https'){
-		res.status(200).json({code:code});
-	}else{
-		res.status(200).send('Welcome, this is HTTP!');
-	}
-});
 //监听登录请求
 app.get('/onLogin', function(req, res){
 	let code=req.query.code;
@@ -80,6 +71,15 @@ app.get('/onLogin', function(req, res){
 		}
 	});
 });
+app.get('/', function(req, res){
+	let code=req.query.code;
+	console.log('code:'+code);
+	if(req.protocol==='https'){
+		res.status(200).json({code:code});
+	}else{
+		res.status(200).send('Welcome, this is HTTP!');
+	}
+});
 app.get('/products', function(req, res){
 	let session_id=req.header('sessionid');
 	let session_val=redisStore.get(session_id);
@@ -87,5 +87,73 @@ app.get('/products', function(req, res){
 		console.log('session_id is not ok');
 	}else{
 		console.log('session_id is ok');
+	}
+});
+app.get('/insertToMysql', function(req, res){
+	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
+		if(err){
+			return console.error(err);
+		}
+		request({
+			url: config.serverAddress,
+			method: 'POST',
+			json: true,
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.parse(data.toString())
+		}, function(err, response, body){
+			if(!err && response.statusCode==200){
+				res.json(body);
+			}else{
+				console.error('err:'+err);
+			}
+		});
+	});
+});
+app.get('/GetBankList', function(req, res){
+	let session_id=req.query.sessionid;
+	let session_val=redisStore.get(session_id);
+	if(session_val){
+		request({
+			url: config.serverAddress,
+			method: 'POST',
+			json: true,
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: {"Action":"GetBankList"}
+		}, function(err, response, body){
+			if(!err && response.statusCode==200){
+				res.json(body);
+			}else{
+				console.error('err:'+err);
+			}
+		});
+	}else{
+		res.json({warning: 'sessionid is invalid'});
+	}
+});
+app.get('/GetProductsInfoList', function(req, res){
+	let session_id=req.query.sessionid;
+	let session_val=redisStore.get(session_id);
+	if(session_val){
+		request({
+			url: config.serverAddress,
+			method: 'POST',
+			json: true,
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: {"Action": "GetBankList"}
+		}, function(err, response, body){
+			if(!err && response.statusCode==200){
+				res.json(body);
+			}else{
+				console.error('err:'+err);
+			}
+		});
+	}else{
+		res.json({warning: 'sessionid is invalid'});
 	}
 });
