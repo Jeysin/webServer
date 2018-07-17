@@ -8,6 +8,7 @@ var config=require('./config');
 var fs=require('fs');
 var http=require('http');
 var https=require('https');
+var cookieParser=require('cookie-parser');
 
 //读取https证书
 var privateKey=fs.readFileSync('./private.pem', 'utf8');
@@ -22,6 +23,8 @@ redisStore.on('connect', function(){
 //使用JSON解析工具
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+//使用cookie
+app.use(cookieParser());
 //开启监听
 //var httpServer=http.createServer(app);
 //httpServer.listen(config.httpPort, function(){
@@ -34,8 +37,8 @@ httpsServer.listen(config.httpsPort, function(){
 //监听登录请求
 app.get('/onLogin', function(req, res){
 	let code=req.query.code;
-	console.log("onLogin: code:"+code);
-
+	console.log('Request path:'+req.path);
+	console.log("code:"+code);
 	var getData=querystring.stringify({
 		appid: config.appid,
 		secret: config.secret,
@@ -57,17 +60,19 @@ app.get('/onLogin', function(req, res){
 				hash.update(openid+session_key);
 				session_id=hash.digest('hex');
 				console.log('session_id:'+session_id);
-				//将session_id存入redis并设置超时时间为30分钟
+				//将session_id存入redis并设置超时时间为20分钟
 				redisStore.set(session_id, openid+":"+session_key);
-				redisStore.expire(session_id, 1800);
-				//将session_id传递给客户端
-				res.set("Content-Type", "application/json");
-				res.json({sessionid: session_id});
+				redisStore.expire(session_id, 1200);
+				//将session_id存入cookie设置超时时间为20分钟
+				res.cookie('sessionid', session_id, {maxAge: 20*60*1000});
+				res.json({sessionid: session_id, errorCode: 0});
 			}else{
-				res.json({warning: 'code is invalid'});
+				res.json({msg: 'code is invalid', code: 8001});
+				console.log('code is invalid, errorCode: 8001');
 			}
 		}else{
-			console.log(err);
+			res.json({msg: 'unknow errro', code: 9001});
+			console.log('unknow error, errorCode: 9001, err:'+err);
 		}
 	});
 });
@@ -84,7 +89,8 @@ var handleFun=function(req, res){
 	var path=req.path;
 	console.log('Request path:'+path);
 	var session_val='';
-	var session_id=req.query.sessionid;
+	var session_id=req.cookies.sessionid;
+	console.log('session_id:'+session_id);
 	if(session_id)session_val=redisStore.get(session_id);
 	if(session_val){
 		request({
@@ -104,33 +110,34 @@ var handleFun=function(req, res){
 			}
 		});
 	}else{
-		console.log('sessionid is invalid');
-		res.json({warning: 'sessionid is invalid, please login again.'});
+		res.json({msg: 'sessionid is invalid', code: 8002});
+		console.log('sessionid is invalid, errorCode: 8002');
 	}
 }
 app.get('/GetBankList', handleFun);
-app.get('/GetProductsInfoList', handleFun);
-app.post('/OperateProduct', function(req, res){
-	var path=req.path;
-	console.log('Request:'+path);
-	request({
-		url:config.serverAddress,
-		method: 'POST',
-		json: true,
-		headers: {
-			'Content-Type':'application/json'
-		},
-		body: req.body
-	}, function(err, response, body){
-		if(!err && response.statusCode==200){
-			res.json(body);
-		}else{
-			res.json({error: err});
-			console.log('error:'+err);
-		}
-	});
-});
-//app.get('/OperateProduct', handleFun);
+app.get('/DescribeDepositProducts', handleFun);
+app.get('/DescribeFinanceProducts', handleFun);
+app.get('/DescribeLoanProducts', handleFun);
+//app.post('/OperateProduct', function(req, res){
+//	var path=req.path;
+//	console.log('Request:'+path);
+//	request({
+//		url:config.serverAddress,
+//		method: 'POST',
+//		json: true,
+//		headers: {
+//			'Content-Type':'application/json'
+//		},
+//		body: req.body
+//	}, function(err, response, body){
+//		if(!err && response.statusCode==200){
+//			res.json(body);
+//		}else{
+//			res.json({error: err});
+//			console.log('error:'+err);
+//		}
+//	});
+//});
 //app.get('/insertToMysql', function(req, res){
 //	console.log('/insertToMysql');
 //	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
