@@ -1,4 +1,4 @@
-var app=require('express')();
+var express=require('express');
 var request=require('request');
 var querystring=require('querystring');
 var redis=require('redis');
@@ -8,11 +8,11 @@ var config=require('./config');
 var fs=require('fs');
 var http=require('http');
 var https=require('https');
-var cookieParser=require('cookie-parser');
+var app=express();
 
 //读取https证书
-var privateKey=fs.readFileSync('./private.pem', 'utf8');
-var certificate=fs.readFileSync('./file.crt', 'utf8');
+var privateKey=fs.readFileSync('../https/Apache/3_openbank.qcloud.com.key', 'utf8');
+var certificate=fs.readFileSync('../https/Apache/2_openbank.qcloud.com.crt', 'utf8');
 var credentials={key: privateKey, cert: certificate};
 //连接redis
 var opts={auth_pass : config.redisPasswd};
@@ -23,13 +23,12 @@ redisStore.on('connect', function(){
 //使用JSON解析工具
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-//使用cookie
-app.use(cookieParser());
+app.use(express.static('public'));
 //开启监听
-//var httpServer=http.createServer(app);
-//httpServer.listen(config.httpPort, function(){
-//	console.log('HTTP server is running on http://localhost:%s', config.httpPort);
-//});
+var httpServer=http.createServer(app);
+httpServer.listen(config.httpPort, function(){
+	console.log('HTTP server is running on http://localhost:%s', config.httpPort);
+});
 var httpsServer=https.createServer(credentials, app);
 httpsServer.listen(config.httpsPort, function(){
 	console.log('HTTPS server is running on https://localhost:%s', config.httpsPort);
@@ -63,8 +62,7 @@ app.get('/onLogin', function(req, res){
 				//将session_id存入redis并设置超时时间为20分钟
 				redisStore.set(session_id, openid+":"+session_key);
 				redisStore.expire(session_id, 1200);
-				//将session_id存入cookie设置超时时间为20分钟
-				res.cookie('sessionid', session_id, {maxAge: 20*60*1000});
+				//将session_id发给前端
 				res.json({sessionid: session_id, errorCode: 0});
 			}else{
 				res.json({msg: 'code is invalid', code: 8001});
@@ -89,8 +87,7 @@ var handleFun=function(req, res){
 	var path=req.path;
 	console.log('Request path:'+path);
 	var session_val='';
-	var session_id=req.cookies.sessionid;
-	console.log('session_id:'+session_id);
+	var session_id=req.query.sessionid;
 	if(session_id)session_val=redisStore.get(session_id);
 	if(session_val){
 		request({

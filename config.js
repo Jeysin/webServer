@@ -1,6 +1,6 @@
 var config={
-	httpPort:10002,
-	httpsPort:10001,
+	httpPort:80,
+	httpsPort:443,
 	//redis配置
 	redisPort:6379,
 	redisHost:'127.0.0.1',
