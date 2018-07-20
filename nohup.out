@@ -971,3 +971,455 @@ HTTP server is running on http://localhost:80
 HTTPS server is running on https://localhost:443
 redis connect successful
 code:undefined
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+code:undefined
+Request path:/onLogin
+code:081fwPFp1p4erp09b7Hp1AhvFp1fwPFY
+openid: oLdEn48Vhg0IQJzY25ammyoVh9w0
+session_key: HGG+PnWF5rBDYOVb1jxRfw==
+session_id:343af235edf66999c4fbb414bd11bf36
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+code:undefined
+Request path:/DescribeDepositProducts
+Request path:/GetBankList
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+Request path:/onLogin
+code:011I6QYL1Es7C51EisZL1XSTYL1I6QYn
+openid: oLdEn48Vhg0IQJzY25ammyoVh9w0
+session_key: eZU3DME9aMe6vNCR/dO8eA==
+session_id:4ff7970ab1ba64cd94864afb88b6fa01
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+Request path:/GetBankList
+Request path:/DescribeDepositProducts
+Request path:/DescribeFinanceProducts
+Request path:/DescribeDepositProducts
+Request path:/DescribeDepositProducts
+sessionid is invalid, errorCode: 8002
+HTTP server is running on http://localhost:80
+HTTPS server is running on https://localhost:443
+redis connect successful
+Request path:/DescribeDepositProducts
+sortType:1
+sortMethod:desc
+amount:undefined
+time:undefined
+sessionid is invalid, errorCode: 8002
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+code:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+code:undefined
+HTTP server is running on http://localhost:80
+HTTPS server is running on https://localhost:443
+redis connect successful
+Request path:/DescribeDepositProducts
+sortType:2
+sortMethod:asc
+amount:undefined
+time:undefined
+sessionid is invalid, errorCode: 8002
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+code:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/GetBankList
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeFinanceProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:1000
+time:6
+Request path:/DescribeDepositProducts
+sortType:undefined
+sortMethod:undefined
+amount:undefined
+time:undefined

@@ -85,7 +85,15 @@ app.get('/', function(req, res){
 });
 var handleFun=function(req, res){
 	var path=req.path;
+	var sortType=req.query.sortType;
+	var sortMethod=req.query.sortMethod;
+	var amount=req.query.amount;
+	var time=req.query.time;
 	console.log('Request path:'+path);
+	console.log('sortType:'+sortType);
+	console.log('sortMethod:'+sortMethod);
+	console.log('amount:'+amount);
+	console.log('time:'+time);
 	var session_val='';
 	var session_id=req.query.sessionid;
 	if(session_id)session_val=redisStore.get(session_id);
@@ -97,7 +105,13 @@ var handleFun=function(req, res){
 			headers: {
 				'Content-Type':'application/json'
 			},
-			body: {"Action" : path.substring(1, path.length)}
+			body: {
+				Action : path.substring(1, path.length),
+				sortType: sortType,
+				sortMethod: sortMethod,
+				amount: amount,
+				time: time
+			}
 		}, function(err, response, body){
 			if(!err && response.statusCode==200){
 				res.json(body);
@@ -115,6 +129,51 @@ app.get('/GetBankList', handleFun);
 app.get('/DescribeDepositProducts', handleFun);
 app.get('/DescribeFinanceProducts', handleFun);
 app.get('/DescribeLoanProducts', handleFun);
+
+
+
+var services = function(req,res){
+	var path = req.path;
+	request({
+		url: config.serverAddress,
+		method: 'POST',
+		json: true,
+		headers:{'Content-Type':'application/json'},
+		body:{'Action':path.substring(1,path.length)}
+	},function(error,response,body){
+		res.set("Content-Type","application/json");
+		if(!error && response.statusCode === 200){
+			res.json(body);
+		}else{
+			res.json({err:error});
+			console.log('err '+error);
+		}
+	});
+}
+var selectBank = function(req,res){
+	var path = req.path;
+	request({
+		url: config.serverAddress,
+		method: 'POST',
+		json: true,
+		headers:{'Content-Type':'application/json'},
+		body:{
+			'Action': path.substring(1,path.length),
+			'serviceId': serviceId
+		}
+	},function(error,response,body){
+		res.set("Content-Type","application/json");
+		if(!error && response.statusCode === 200){
+			res.json(body);
+		}else{
+			res.json({err:error});
+			console.log('err '+error);
+		}
+	});
+
+}
+app.get('/SelectBank',selectBank);
+app.get('AllServices',services);
 //app.post('/OperateProduct', function(req, res){
 //	var path=req.path;
 //	console.log('Request:'+path);

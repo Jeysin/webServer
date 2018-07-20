@@ -108,49 +108,48 @@ var handleFun=function(req, res){
 		res.json({warning: 'sessionid is invalid, please login again.'});
 	}
 }
-app.get('/GetBankList', handleFun);
-app.get('/GetProductsInfoList', handleFun);
-app.post('/OperateProduct', function(req, res){
-	var path=req.path;
-	console.log('Request:'+path);
+var services = function(req,res){
+	var path = req.path;
 	request({
-		url:config.serverAddress,
+		url: config.serverAddress,
 		method: 'POST',
 		json: true,
-		headers: {
-			'Content-Type':'application/json'
-		},
-		body: req.body
-	}, function(err, response, body){
-		if(!err && response.statusCode==200){
+		headers:{'Content-Type':'application/json'},
+		body:{'Action':path.substring(1,path.length)}
+	},function(error,response,body){
+		res.set("Content-Type","application/json");
+		if(!error && response.statusCode === 200){
 			res.json(body);
 		}else{
-			res.json({error: err});
-			console.log('error:'+err);
+			res.json({err:error});
+			console.log('err '+error);
 		}
 	});
-});
-//app.get('/OperateProduct', handleFun);
-//app.get('/insertToMysql', function(req, res){
-//	console.log('/insertToMysql');
-//	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
-//		if(err){
-//			return console.error(err);
-//		}
-//		request({
-//			url: config.serverAddress,
-//			method: 'POST',
-//			json: true,
-//			headers: {
-//				'Content-Type': 'application/json'
-//			},
-//			body: JSON.parse(data.toString())
-//		}, function(err, response, body){
-//			if(!err && response.statusCode==200){
-//				res.json(body);
-//			}else{
-//				console.error('err:'+err);
-//			}
-//		});
-//	});
-//});
+}
+var selectBank = function(req,res){
+	var path = req.path;
+	request({
+		url: config.serverAddress,
+		method: 'POST',
+		json: true,
+		headers:{'Content-Type':'application/json'},
+		body:{
+			'Action': path.substring(1,path.length),
+			'serviceId': serviceId
+		}
+	},function(error,response,body){
+		res.set("Content-Type","application/json");
+		if(!error && response.statusCode === 200){
+			res.json(body);
+		}else{
+			res.json({err:error});
+			console.log('err '+error);
+		}
+	});
+
+}
+app.get('/SelectBank',selectBank);
+app.get('AllServices',services);
+
+app.get('/GetBankList', handleFun);
+app.get('/GetProductsInfoList', handleFun);
