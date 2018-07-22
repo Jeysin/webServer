@@ -1,6 +1,8 @@
 var config={
 	httpPort:80,
 	httpsPort:443,
+	//httpPort:10002,
+	//httpsPort:10001,
 	//redis配置
 	redisPort:6379,
 	redisHost:'127.0.0.1',
@@ -12,6 +14,7 @@ var config={
 	//后台配置
 	serverAddress:'http://193.112.75.25:10003/product',
 	//log文件配置
+	logDirName: 'log',
 	logFileName:'webServer.log'
 }
 module.exports=config;
