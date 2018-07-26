@@ -11,6 +11,7 @@ var https=require('https');
 var app=express();
 var morgan=require('morgan');
 var fs=require('fs');
+var captchapng=require('captchapng');
 
 //读取https证书
 var privateKey=fs.readFileSync('../https/Apache/3_openbank.qcloud.com.key', 'utf8');
@@ -94,6 +95,7 @@ var handleFun=function(req, res){
 	var Time=req.query.Time;
 	var MinTime=req.query.MinTime;
 	var MaxTime=req.query.MaxTime;
+	var ServiceId=req.query.ServiceId;
 	console.log('Request path:'+path);
 	console.log('SortType:'+SortType);
 	console.log('SortMethod:'+SortMethod);
@@ -119,7 +121,8 @@ var handleFun=function(req, res){
 				Amount: Amount,
 				Time: Time,
 				MinTime: MinTime,
-				MaxTime: MaxTime
+				MaxTime: MaxTime,
+				ServiceId: ServiceId
 			}
 		}, function(err, response, body){
 			if(!err && response.statusCode==200){
@@ -137,36 +140,17 @@ var handleFun=function(req, res){
 app.get('/DescribeDepositProducts', handleFun);
 app.get('/DescribeFinanceProducts', handleFun);
 app.get('/DescribeLoanProducts', handleFun);
-app.get('/DescribeBankList', function(req, res){
-	var ServiceId=req.query.ServiceId;
-	var path=req.query.path;
-	var session_val='';
-	var session_id=req.query.SessionId;
-	if(session_id)session_val=redisStore.get(session_id);
-	if(session_val){
-		request({
-			url: config.serverAddress,
-			method: 'POST',
-			json: true,
-			headers: {
-				'Content-Type':'application/json'
-			},
-			body: {
-				Action : path.substring(1, path.length),
-				ServiceId: ServiceId,
-			}
-		}, function(err, response, body){
-			if(!err && response.statusCode==200){
-				res.json(body);
-			}else{
-				res.json({Msg: err, Code:9001});
-				console.log('error:'+err);
-			}
-		});
-	}else{
-		res.json({Msg: 'sessionid is invalid', Code: 8002});
-		console.log('sessionid is invalid, errorCode: 8002');
-	}
+app.get('/DescribeBankList', handleFun);
+
+app.get('/GetCaptchaPng', function(req, res){
+	var code=parseInt(Math.random()*9000+1000);
+	var p=new captchapng(100, 30, code);
+	p.color(0, 0, 0, 0);
+	p.color(80, 80, 80, 255);
+	var img = p.getBase64();
+	var imgbase64 = new Buffer(img, 'base64');
+	res.writeHead(200, {'Content-Type': 'image/png'});
+	res.end(imgbase64);
 });
 
 var services = function(req,res){
