@@ -12,6 +12,7 @@ var app=express();
 var morgan=require('morgan');
 var fs=require('fs');
 var captchapng=require('captchapng');
+var WXBizDataCrypt = require('./WXBizDataCrypt')
 
 //读取https证书
 var privateKey=fs.readFileSync('../https/Apache/3_openbank.qcloud.com.key', 'utf8');
@@ -64,17 +65,25 @@ app.get('/onLogin', function(req, res){
 			var json=JSON.parse(req.body);
 			var openid=json.openid;
 			var session_key=json.session_key;
+			var unionid=json.unionid;
 			console.log('openid: '+openid);
 			console.log('session_key: '+session_key);
 			if(openid && session_key){
 				//根据openid和session_key用md5算法生成session_id
 				var hash=crypto.createHash('md5');
-				hash.update(openid+session_key);
+				hash.update(openid+'yinhutong');
 				session_id=hash.digest('hex');
 				console.log('session_id:'+session_id);
 				//将session_id存入redis并设置超时时间为20分钟
 				redisStore.set(session_id, openid+":"+session_key);
 				redisStore.expire(session_id, 1200);
+				//将SessionId和openid关联起来存入数据库
+				redisStore.hset('SessionId_OpenId', session_id, openid);
+				//解密获取unionid并存入redis
+				var pc = new WXBizDataCrypt(config.appid, session_key);
+				var data = pc.decryptData(encryptedData, iv);
+				redisStore.hset('OpenId_UnionId', openid, data.unionId);
+				console.log('union_id:'+data.unionId);
 				//将session_id发给前端
 				res.json({SessionId: session_id, Code:0, Msg:'success'});
 			}else{
@@ -95,6 +104,8 @@ var handleFun=function(req, res){
 	var Time=req.query.Time;
 	var MinTime=req.query.MinTime;
 	var MaxTime=req.query.MaxTime;
+	var Offset=req.query.Offset;
+	var Length=req.query.Length;
 	var ServiceId=req.query.ServiceId;
 	console.log('Request path:'+path);
 	console.log('SortType:'+SortType);
@@ -122,6 +133,8 @@ var handleFun=function(req, res){
 				Time: Time,
 				MinTime: MinTime,
 				MaxTime: MaxTime,
+				Offset: Offset,
+				Length: Length,
 				ServiceId: ServiceId
 			}
 		}, function(err, response, body){
@@ -141,6 +154,129 @@ app.get('/DescribeDepositProducts', handleFun);
 app.get('/DescribeFinanceProducts', handleFun);
 app.get('/DescribeLoanProducts', handleFun);
 app.get('/DescribeBankList', handleFun);
+app.get('/DescribeToken', function(req, res){
+	var path=req.path;
+	var PsInfo=req.query.PsInfo;
+	var BkCode=req.query.BkCode;
+	var SprdId=req.querySprdId;
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.SessionId;
+	if(session_id)session_val=redisStore.get(session_id);
+	if(session_val){
+		var openid=redisStore.hget('SessionId_OpenId', session_id);
+		var unionid=redisStore.hget('OpenId_UnionId', openid);
+		request({
+			url: config.serverAddress,
+			method: 'POST',
+			json: true,
+			headers: {
+				'Content-Type':'application/json'
+			},
+			body: {
+				Action : path.substring(1, path.length),
+				SessionId : session_id,
+				UnionId : unionid,
+				PsInfo : PsInfo,
+				BkCode : BkCode,
+				SprdId : SprdId
+			}
+		}, function(err, response, body){
+			if(!err && response.statusCode==200){
+				res.json(body);
+			}else{
+				res.json({Msg: err, Code:9001});
+				console.log('error:'+err);
+			}
+		});
+	}else{
+		res.json({Msg: 'sessionid is invalid', Code: 8002});
+		console.log('sessionid is invalid, errorCode: 8002');
+	}
+});
+app.get('/SentShortMsg', function(req, res){
+	var path=req.path;
+	var phoneNum=req.query.PhoneNum;
+	var authCode=parseInt(Math.random()*1000000);
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.SessionId;
+	if(session_id)session_val=redisStore.get(session_id);
+	if(session_val){
+		request({
+			url: config.serverAddress,
+			method: 'POST',
+			json: true,
+			headers: {
+				'Content-Type':'application/json'
+			},
+			body: {
+				Action : path.substring(1, path.length),
+				phoneNum: phoneNum,
+				random: authCode
+			}
+		}, function(err, response, body){
+			if(!err && response.statusCode==200){
+				//设置验证码五分钟有效
+				redisStore.set(phoneNum, authCode);
+				redisStore.expire(phoneNum, 5*60);
+				res.json({Msg: 'successful', Code: 0});
+			}else{
+				res.json({Msg: err, Code:9001});
+				console.log('error:'+err);
+			}
+		});
+	}else{
+		res.json({Msg: 'sessionid is invalid', Code: 8002});
+		console.log('sessionid is invalid, errorCode: 8002');
+	}
+});
+app.get('/VerifyShortMsg', function(req, res){
+	var path=req.path;
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.SessionId;
+	if(session_id)session_val=redisStore.get(session_id);
+	if(session_val){
+		var phoneNum='';
+		phoneNum=req.query.PhoneNum;
+		var myAutoCode=redisStore.get(phoneNum);
+		var autoCode=req.query.AutoCode;
+		if(myAutoCode===autoCode){
+			request({
+				url: config.serverAddress,
+				method: 'POST',
+				json: true,
+				headers: {
+					'Content-Type':'application/json'
+				},
+				body: {
+					Action : 'VerifyWhiteList',
+					phoneNum: phoneNum,
+				}
+			}, function(err, response, body){
+				if(!err && response.statusCode==200){
+					var json=JSON.parse(body);
+					var isInWhiteList=json.isInWhiteList;
+					if(isInWhiteList==='yes'){
+						res.json({Msg: 'successful', Code: 0});
+					}else{
+						res.json({Msg: 'The phone number is not in white list', Code: 8005});
+					}
+				}else{
+					res.json({Msg: err, Code:9001});
+					console.log('error:'+err);
+				}
+			});
+		}else{
+			res.json({Msg: 'The short message is invalid', Code: 8004});
+			console.log('The short message is invalid, errorCode: 8004');
+		}
+	}else{
+		res.json({Msg: 'sessionid is invalid', Code: 8002});
+		console.log('sessionid is invalid, errorCode: 8002');
+	}
+});
 
 app.get('/GetCaptchaPng', function(req, res){
 	var code=parseInt(Math.random()*9000+1000);
@@ -152,7 +288,6 @@ app.get('/GetCaptchaPng', function(req, res){
 	res.writeHead(200, {'Content-Type': 'image/png'});
 	res.end(imgbase64);
 });
-
 var services = function(req,res){
 	var session_val='';
 	var session_id=req.query.SessionId;
@@ -180,46 +315,3 @@ var services = function(req,res){
 	}
 }
 app.get('/AllServices',services);
-//app.post('/OperateProduct', function(req, res){
-//	var path=req.path;
-//	console.log('Request:'+path);
-//	request({
-//		url:config.serverAddress,
-//		method: 'POST',
-//		json: true,
-//		headers: {
-//			'Content-Type':'application/json'
-//		},
-//		body: req.body
-//	}, function(err, response, body){
-//		if(!err && response.statusCode==200){
-//			res.json(body);
-//		}else{
-//			res.json({error: err});
-//			console.log('error:'+err);
-//		}
-//	});
-//});
-//app.get('/insertToMysql', function(req, res){
-//	console.log('/insertToMysql');
-//	fs.readFile('./OperateProduct.json', 'utf8', function(err, data){
-//		if(err){
-//			return console.error(err);
-//		}
-//		request({
-//			url: config.serverAddress,
-//			method: 'POST',
-//			json: true,
-//			headers: {
-//				'Content-Type': 'application/json'
-//			},
-//			body: JSON.parse(data.toString())
-//		}, function(err, response, body){
-//			if(!err && response.statusCode==200){
-//				res.json(body);
-//			}else{
-//				console.error('err:'+err);
-//			}
-//		});
-//	});
-//});
