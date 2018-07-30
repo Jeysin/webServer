@@ -5,6 +5,33 @@ var config=require('./config');
 var redisStore=require('./redisStore');
 var WXBizDataCrypt=require('./WXBizDataCrypt')
 
+var verifyUserInfo=function(sessionid, openid, unionid, res){
+	request({
+		url: config.serverAddress,
+		method: 'POST',
+		json: true,
+		headers: {
+			'Content-Type':'application/json'
+		},
+		body: {
+			Action : 'VerifyUserInfo',
+			openId: openid,
+			unionId: unionid
+		}
+	}, function(err, response, body){
+		if(!err && response.statusCode==200){
+			var isSuccessful=body.isSuccessful;
+			if(isSuccessful==='yes'){
+				res.json({SessionId: sessionid, Code:0, Msg:'success'});
+			}else{
+				res.json({SessionId: sessionid, Code:8200, Msg:'The user is not register'});
+			}
+		}else{
+			res.json({Msg: err, Code:9001});
+			console.log('error:'+err);
+		}
+	});
+}
 var onLogin=function(req, res){
 	let code=req.query.Code;
 	var encryptedData=req.query.EncryptedData;
@@ -43,8 +70,8 @@ var onLogin=function(req, res){
 				var data = pc.decryptData(encryptedData, iv);
 				redisStore.hset('OpenId_UnionId', openid, data.unionId);
 				console.log('unionid:'+data.unionId);
-				//将session_id发给前端
-				res.json({SessionId: session_id, Code:0, Msg:'success'});
+				//验证用户是否已经注册过
+				verifyUserInfo(session_id, openid, data.unionId, res);
 			}else{
 				res.json({Msg: 'code is invalid', Code: 8001});
 				console.log('code is invalid, errorCode: 8001');

@@ -20,8 +20,8 @@ var hadOpenId=function(openid, req, res){
 				}
 			}, function(err, response, body){
 				if(!err && response.statusCode==200){
-					var isInWhiteList=body.isInWhiteList;
-					if(isInWhiteList==='yes'){
+					var isSuccessful=body.isSuccessful;
+					if(isSuccessful==='yes'){
 						res.json({Msg: 'successful', Code: 0});
 					}else{
 						res.json({Msg: 'The phone number is not in white list', Code: 8005});
@@ -34,7 +34,6 @@ var hadOpenId=function(openid, req, res){
 		}else{
 			res.json({Msg: '/hadOpenId: The error is unknow',Code:9001});
 			console.log(err);
-
 		}
 	});
 }
@@ -57,28 +56,33 @@ var hadMyAuthCode=function(authCode, myAuthCode, req, res){
 var verifyMsgAndRegister=function(req, res){
 	var path=req.path;
 	console.log('Request path:'+path);
-	var session_val='';
 	var session_id=req.query.SessionId;
-	if(session_id)session_val=redisStore.get(session_id);
-	if(session_val){
-		var phoneNum=req.query.PhoneNum;
-		var authCode=req.query.AuthCode;
-		if(phoneNum && authCode){
-			redisStore.get(phoneNum, function(err, myAuthCode){
-				if(!err){
-					hadMyAuthCode(authCode, myAuthCode, req, res);
-				}else{
-					res.json({Msg: 'verifyMsgAndRegister: The error is unknow',Code:9001});
-					console.log(err);
-				}
-			});
-		}else{
-			res.json({Msg: 'The phone number or authcode is null', Code: 8003});
-			console.log('The phone number or authcode is null, errorCode: 8003');
+	redisStore.ttl(session_id, function(err, expireTime){
+		if(err){
+			res.json({Msg: '/sendShortMsg: The error is unknow',Code:9001});
+			console.log(err);
+			return;
 		}
-	}else{
-		res.json({Msg: 'sessionid is invalid', Code: 8002});
-		console.log('sessionid is invalid, errorCode: 8002');
-	}
+		if(expireTime>0){
+			var phoneNum=req.query.PhoneNum;
+			var authCode=req.query.AuthCode;
+			if(phoneNum && authCode){
+				redisStore.get(phoneNum, function(err, myAuthCode){
+					if(!err){
+						hadMyAuthCode(authCode, myAuthCode, req, res);
+					}else{
+						res.json({Msg: 'verifyMsgAndRegister: The error is unknow',Code:9001});
+						console.log(err);
+					}
+				});
+			}else{
+				res.json({Msg: 'The phone number or authcode is null', Code: 8003});
+				console.log('The phone number or authcode is null, errorCode: 8003');
+			}
+		}else{
+			res.json({Msg: 'sessionid is invalid', Code: 8002});
+			console.log('sessionid is invalid, errorCode: 8002');
+		}
+	});	
 }
 module.exports=verifyMsgAndRegister;
