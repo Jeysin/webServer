@@ -50,8 +50,11 @@ httpsServer.listen(config.httpsPort, function(){
 //监听登录请求
 app.get('/onLogin', function(req, res){
 	let code=req.query.Code;
+	var encryptedData=req.query.EncryptedData;
+	var iv=req.query.Iv;
 	console.log('Request path:'+req.path);
 	console.log("code:"+code);
+
 	var getData=querystring.stringify({
 		appid: config.appid,
 		secret: config.secret,
@@ -83,7 +86,7 @@ app.get('/onLogin', function(req, res){
 				var pc = new WXBizDataCrypt(config.appid, session_key);
 				var data = pc.decryptData(encryptedData, iv);
 				redisStore.hset('OpenId_UnionId', openid, data.unionId);
-				console.log('union_id:'+data.unionId);
+				console.log('unionid:'+data.unionId);
 				//将session_id发给前端
 				res.json({SessionId: session_id, Code:0, Msg:'success'});
 			}else{
@@ -194,11 +197,13 @@ app.get('/DescribeToken', function(req, res){
 		console.log('sessionid is invalid, errorCode: 8002');
 	}
 });
-app.get('/SentShortMsg', function(req, res){
+app.get('/SendShortMsg', function(req, res){
 	var path=req.path;
 	var phoneNum=req.query.PhoneNum;
-	var authCode=parseInt(Math.random()*1000000);
+	var authCode=parseInt(Math.random()*900000+100000);
 	console.log('Request path:'+path);
+	console.log('phoneNum is:'+phoneNum);
+	console.log('authCode is:'+authCode);
 	var session_val='';
 	var session_id=req.query.SessionId;
 	if(session_id)session_val=redisStore.get(session_id);
@@ -231,18 +236,63 @@ app.get('/SentShortMsg', function(req, res){
 		console.log('sessionid is invalid, errorCode: 8002');
 	}
 });
-app.get('/VerifyShortMsg', function(req, res){
+app.get('/VerifyMsgAndRegister', function(req, res){
 	var path=req.path;
 	console.log('Request path:'+path);
 	var session_val='';
 	var session_id=req.query.SessionId;
 	if(session_id)session_val=redisStore.get(session_id);
 	if(session_val){
-		var phoneNum='';
-		phoneNum=req.query.PhoneNum;
-		var myAutoCode=redisStore.get(phoneNum);
-		var autoCode=req.query.AutoCode;
-		if(myAutoCode===autoCode){
+		var phoneNum=req.query.PhoneNum;
+		var authCode=req.query.AuthCode;
+		if(phoneNum && authCode){
+			var myAuthCode=redisStore.get(phoneNum);
+			if(myAuthCode===authCode){
+				var openid=redisStore.hget('SessionId_OpenId', session_id);
+				var unionid=redisStore.hget('OpenId_UnionId', openid);
+				request({
+					url: config.serverAddress,
+					method: 'POST',
+					json: true,
+					headers: {
+						'Content-Type':'application/json'
+					},
+					body: {
+						Action : 'VerifyWhiteList',
+						phoneNum: phoneNum,
+						openId: openid,
+						unionId: unionid
+					}
+				}, function(err, response, body){
+					if(!err && response.statusCode==200){
+						var json=JSON.parse(body);
+						var isInWhiteList=json.isInWhiteList;
+						if(isInWhiteList==='yes'){
+							res.json({Msg: 'successful', Code: 0});
+						}else{
+							res.json({Msg: 'The phone number is not in white list', Code: 8005});
+						}
+					}else{
+						res.json({Msg: err, Code:9001});
+						console.log('error:'+err);
+					}
+				});
+			}else{
+				res.json({Msg: 'The short message is invalid', Code: 8004});
+				console.log('The short message is invalid, errorCode: 8004');
+			}
+		}else{
+			res.json({Msg: 'The phone number or authcode is null', Code: 8003});
+			console.log('The phone number or authcode is null, errorCode: 8003');
+		}
+	}else{
+		res.json({Msg: 'sessionid is invalid', Code: 8002});
+		console.log('sessionid is invalid, errorCode: 8002');
+	}
+});
+var hadOpenId=function(openid, req, res){
+	redisStore.hget('OpenId_UnionId', openid, function(err, unionid){
+		if(!err){
 			request({
 				url: config.serverAddress,
 				method: 'POST',
@@ -251,14 +301,16 @@ app.get('/VerifyShortMsg', function(req, res){
 					'Content-Type':'application/json'
 				},
 				body: {
-					Action : 'VerifyWhiteList',
+					Action : 'ModifyPhoneNum',
 					phoneNum: phoneNum,
+					openId: openid,
+					unionId: unionid
 				}
 			}, function(err, response, body){
 				if(!err && response.statusCode==200){
 					var json=JSON.parse(body);
-					var isInWhiteList=json.isInWhiteList;
-					if(isInWhiteList==='yes'){
+					var isSuccessful=json.isSuccessful;
+					if(isSuccessful==='yes'){
 						res.json({Msg: 'successful', Code: 0});
 					}else{
 						res.json({Msg: 'The phone number is not in white list', Code: 8005});
@@ -269,15 +321,79 @@ app.get('/VerifyShortMsg', function(req, res){
 				}
 			});
 		}else{
-			res.json({Msg: 'The short message is invalid', Code: 8004});
-			console.log('The short message is invalid, errorCode: 8004');
+			res.json({Msg: '/hadOpenId: The error is unknow',Code:9001});
+			console.log(err);
+
+		}
+	});
+}
+var hadMyAuthCode=function(authCode, myAuthCode, req, res){
+	if(authCode===myAuthCode){
+		var SessionId=req.query.SessionId;
+		redisStore.hget('SessionId_OpenId', SessionId, function(err, openid){
+			if(!err){
+				hadOpenId(openid, req, res);
+			}else{
+				res.json({Msg: '/hadMyAuthCode: The error is unknow',Code:9001});
+				console.log(err);
+			}
+		});
+	}else{
+		res.json({Msg: 'The short message is invalid', Code: 8004});
+		console.log('The short message is invalid, errorCode: 8004');
+	}
+};
+app.get('/VerifyMsgAndModifyPhoneNum', function(req, res){
+	var path=req.path;
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.SessionId;
+	if(session_id)session_val=redisStore.get(session_id);
+	if(session_val){
+		var phoneNum=req.query.PhoneNum;
+		var authCode=req.query.AuthCode;
+		if(phoneNum && authCode){
+			redisStore.get(phoneNum, function(err, myAuthCode){
+				if(!err){
+					hadMyAuthCode(authCode, myAuthCode, req, res);
+				}else{
+					res.json({Msg: '/VerifyMsgAndModifyPhoneNum: The error is unknow',Code:9001});
+					console.log(err);
+				}
+			});
+		}else{
+			res.json({Msg: 'The phone number or authcode is null', Code: 8003});
+			console.log('The phone number or authcode is null, errorCode: 8003');
+		}
+
+
+		if(phoneNum && authCode){
+			redisStore.get(phoneNum, function(err, myAuthCode){
+				if(myAuthCode===authCode){
+					var openid=redisStore.hget('SessionId_OpenId', session_id);
+					var unionid=redisStore.hget('OpenId_UnionId', openid);
+				}else{
+				}
+			});
+		}else{
+			res.json({Msg: 'The phone number or authcode is null', Code: 8003});
+			console.log('The phone number or authcode is null, errorCode: 8003');
 		}
 	}else{
 		res.json({Msg: 'sessionid is invalid', Code: 8002});
 		console.log('sessionid is invalid, errorCode: 8002');
 	}
 });
+app.get('/VerifyInvitationCode', function(req, res){
+	var path=req.path;
+	console.log('Request path:'+path);
+	var session_val='';
+	var session_id=req.query.SessionId;
+	if(session_id)session_val=redisStore.get(session_id);
+	if(session_val){
 
+	}
+});
 app.get('/GetCaptchaPng', function(req, res){
 	var code=parseInt(Math.random()*9000+1000);
 	var p=new captchapng(100, 30, code);
