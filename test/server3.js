@@ -2,7 +2,6 @@ var express=require('express');
 var request=require('request');
 var querystring=require('querystring');
 var redis=require('redis');
-var crypto=require('crypto');
 var bodyParser=require('body-parser');
 var config=require('./config');
 var fs=require('fs');
@@ -12,8 +11,10 @@ var app=express();
 var morgan=require('morgan');
 var fs=require('fs');
 var captchapng=require('captchapng');
-var WXBizDataCrypt = require('./WXBizDataCrypt')
+var crypto=require('crypto');
+var WXBizDataCrypt=require('./WXBizDataCrypt')
 
+var onLogin=require('./onLogin');
 //读取https证书
 var privateKey=fs.readFileSync('../https/Apache/3_openbank.qcloud.com.key', 'utf8');
 var certificate=fs.readFileSync('../https/Apache/2_openbank.qcloud.com.crt', 'utf8');
@@ -24,6 +25,7 @@ var redisStore=redis.createClient(config.redisPort, config.redisHost, opts);
 redisStore.on('connect', function(){
 	console.log('redis connect successful');
 });
+module.exports.redisStore=redisStore;
 //使用JSON解析工具
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
