@@ -1,22 +1,14 @@
 var request=require('request');
 var config=require('./config');
 var redisStore=require('./redisStore');
-var describeToken=function(req, res){
-	var path=req.path;
-	var PsInfo=req.query.PsInfo;
-	var BkCode=req.query.BkCode;
-	var SprdId=req.querySprdId;
-	console.log('Request path:'+path);
-	var session_id=req.query.SessionId;
-	redisStore.ttl(session_id, function(err, expireTime){
-		if(err){
-			res.json({Msg: '/sendShortMsg: The error is unknow',Code:9001});
-			console.log(err);
-			return;
-		}
-		if(expireTime>0){
-			var openid=redisStore.hget('SessionId_OpenId', session_id);
-			var unionid=redisStore.hget('OpenId_UnionId', openid);
+var hadOpenId=function(openid, req, res){
+	redisStore.hget('OpenId_UnionId', openid, function(err, unionid){
+		if(!err){
+			var path=req.path;
+			var session_id=req.query.SessionId;
+			var PsInfo=req.query.PsInfo;
+			var BkCode=req.query.BkCode;
+			var SprdId=req.query.SprdId;
 			request({
 				url: config.serverAddress,
 				method: 'POST',
@@ -38,6 +30,36 @@ var describeToken=function(req, res){
 				}else{
 					res.json({Msg: err, Code:9001});
 					console.log('error:'+err);
+				}
+			});
+		}else{
+			res.json({Msg: '/hadOpenId: The error is unknow',Code:9001});
+			console.log(err);
+		}
+	});
+}
+var describeToken=function(req, res){
+	var path=req.path;
+	console.log('Request path:'+path);
+	var session_id=req.query.SessionId;
+	if(!session_id){
+		res.json({Msg: 'SessionId can not be null', Code: 8003});
+		console.log('Msg: SessionId can not be null, Code: 8003');
+		return;
+	}
+	redisStore.ttl(session_id, function(err, expireTime){
+		if(err){
+			res.json({Msg: '/sendShortMsg: The error is unknow',Code:9001});
+			console.log(err);
+			return;
+		}
+		if(expireTime>0){
+			redisStore.hget('SessionId_OpenId', session_id, function(err, openid){
+				if(!err){
+					hadOpenId(openid, req, res);
+				}else{
+					res.json({Msg: '/describeToken: The error is unknow',Code:9001});
+					console.log(err);
 				}
 			});
 		}else{

@@ -11,10 +11,11 @@ var myTimer=setInterval(function(){
 		}else{
 			clearTimeout(myTimer);
 			console.log('I expried');
-			var val=redisStore.get('jeysin');
-			console.log('val:'+val);
 			redisStore.ttl('jeysin', function(err, expireTime){
 				console.log('expireTime:'+expireTime);
+			});
+			redisStore.get('jeysin', function(err, val){
+				console.log('val:'+val);	
 			});
 			redisStore.quit();
 		}

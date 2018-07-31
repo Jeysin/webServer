@@ -43,6 +43,7 @@ var getCaptchaPng=require('./getCaptchaPng');
 var verifyMsgAndRegister=require('./verifyMsgAndRegister');
 var verifyMsgAndModifyPhoneNum=require('./verifyMsgAndModifyPhoneNum');
 var verifyInvitationCode=require('./verifyInvitationCode');
+var getBaseInfo=require('./getBaseInfo');
 
 app.get('/onLogin', onLogin);
 app.get('/DescribeDepositProducts', handleFun);
@@ -54,5 +55,6 @@ app.get('/SendShortMsg', sendShortMsg);
 app.get('/VerifyMsgAndRegister', verifyMsgAndRegister);
 app.get('/VerifyMsgAndModifyPhoneNum', verifyMsgAndModifyPhoneNum);
 app.get('/VerifyInvitationCode', verifyInvitationCode);
+app.get('/GetBaseInfo', getBaseInfo);
 app.get('/GetCaptchaPng', getCaptchaPng);
 app.get('/AllServices', handleFun);

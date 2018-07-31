@@ -43,6 +43,11 @@ var sendShortMsg=function(req, res){
 	var authCode=parseInt(Math.random()*900000+100000);
 	console.log('Request path:'+path);
 	var session_id=req.query.SessionId;
+	if(!session_id){
+		res.json({Msg: 'SessionId can not be null', Code: 8003});
+		console.log('Msg: SessionId can not be null, Code: 8003');
+		return;
+	}
 	redisStore.ttl(session_id, function(err, expireTime){
 		if(err){
 			res.json({Msg: '/sendShortMsg: The error is unknow',Code:9001});

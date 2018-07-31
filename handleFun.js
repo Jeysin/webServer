@@ -1,7 +1,7 @@
 var request=require('request');
 var config=require('./config');
 var redisStore=require('./redisStore');
-var handleFun=function(req, res){
+var handleFunCore=function(req, res){
 	var path=req.path;
 	var SortType=req.query.SortType;
 	var SortMethod=req.query.SortMethod;
@@ -52,6 +52,56 @@ var handleFun=function(req, res){
 		}else{
 			res.json({Msg: 'sessionid is invalid', Code: 8002});
 			console.log('sessionid is invalid, errorCode: 8002');
+		}
+	});
+}
+var hadOpenId=function(openid, req, res){
+	redisStore.hget('OpenId_UnionId', openid, function(err, unionid){
+		if(!err){
+			request({
+				url: config.serverAddress,
+				method: 'POST',
+				json: true,
+				headers: {
+					'Content-Type':'application/json'
+				},
+				body: {
+					Action : 'VerifyUserInfo',
+					openId: openid,
+					unionId: unionid
+				}
+			}, function(err, response, body){
+				if(!err && response.statusCode==200){
+					var isSuccessful=body.isSuccessful;
+					if(isSuccessful==='yes'){
+						handleFunCore(req, res);
+					}else{
+						res.json({Code:8200, Msg:'The user is not register'});
+					}
+				}else{
+					res.json({Msg: err, Code:9001});
+					console.log('error:'+err);
+				}
+			});
+		}else{
+			res.json({Msg: '/hadOpenId: The error is unknow',Code:9001});
+			console.log(err);
+		}
+	});
+}
+var handleFun=function(req, res){
+	var SessionId=req.query.SessionId;
+	if(!SessionId){
+		res.json({Msg: 'SessionId can not be null', Code: 8003});
+		console.log('Msg: SessionId can not be null, Code: 8003');
+		return;
+	}
+	redisStore.hget('SessionId_OpenId', SessionId, function(err, openid){
+		if(!err){
+			hadOpenId(openid, req, res);
+		}else{
+			res.json({Msg: '/handleFun: The error is unknow',Code:9001});
+			console.log(err);
 		}
 	});
 }
