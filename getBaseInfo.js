@@ -31,6 +31,7 @@ var hadOpenId=function(openid, req, res){
 }
 var getBaseInfo=function(req, res){
 	var path=req.path;
+	console.log('Request path:'+path);
 	var SessionId=req.query.SessionId;
 	if(!SessionId){
 		res.json({Msg: 'SessionId can not be null', Code: 8003});

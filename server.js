@@ -57,4 +57,4 @@ app.get('/VerifyMsgAndModifyPhoneNum', verifyMsgAndModifyPhoneNum);
 app.get('/VerifyInvitationCode', verifyInvitationCode);
 app.get('/GetBaseInfo', getBaseInfo);
 app.get('/GetCaptchaPng', getCaptchaPng);
-app.get('/AllServices', handleFun);
+app.get('/DescribeServices', handleFun);
