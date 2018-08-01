@@ -44,6 +44,7 @@ var verifyMsgAndRegister=require('./verifyMsgAndRegister');
 var verifyMsgAndModifyPhoneNum=require('./verifyMsgAndModifyPhoneNum');
 var verifyInvitationCode=require('./verifyInvitationCode');
 var getBaseInfo=require('./getBaseInfo');
+var uploadFile=require('./uploadFile');
 
 app.get('/onLogin', onLogin);
 app.get('/DescribeDepositProducts', handleFun);
@@ -58,3 +59,4 @@ app.get('/VerifyInvitationCode', verifyInvitationCode);
 app.get('/GetBaseInfo', getBaseInfo);
 app.get('/GetCaptchaPng', getCaptchaPng);
 app.get('/DescribeServices', handleFun);
+app.post('/UploadFile', uploadFile);

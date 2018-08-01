@@ -1,0 +1,9 @@
+**************************
+{ file:
+   [ { fieldName: 'file',
+       originalFilename: 'tmp_979f7e4592ee9f6f028c5c6fadb60c87.mp4',
+       path: 'upload/A7yQ00WMHUIq6fw8BSrtSKST.mp4',
+       headers: [Object],
+       size: 5101003 } ] }
+**************************
+
