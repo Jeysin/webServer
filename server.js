@@ -45,6 +45,8 @@ var verifyMsgAndModifyPhoneNum=require('./verifyMsgAndModifyPhoneNum');
 var verifyInvitationCode=require('./verifyInvitationCode');
 var getBaseInfo=require('./getBaseInfo');
 var uploadFile=require('./uploadFile');
+var checkToken=require('./checkToken');
+var getImageQrCode=require('./getImageQrCode');
 
 app.get('/onLogin', onLogin);
 app.get('/DescribeDepositProducts', handleFun);
@@ -60,3 +62,5 @@ app.get('/GetBaseInfo', getBaseInfo);
 app.get('/GetCaptchaPng', getCaptchaPng);
 app.get('/DescribeServices', handleFun);
 app.post('/UploadFile', uploadFile);
+app.get('/CheckToken', checkToken);
+app.get('/GetImageQrCode', getImageQrCode);

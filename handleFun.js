@@ -12,6 +12,8 @@ var handleFunCore=function(req, res){
 	var Offset=req.query.Offset;
 	var Length=req.query.Length;
 	var ServiceId=req.query.ServiceId;
+	var ProductType=req.query.ProductType;
+	var Repaymentmode=req.query.Repaymentmode;
 	console.log('Request path:'+path);
 	console.log('SortType:'+SortType);
 	console.log('SortMethod:'+SortMethod);
@@ -19,6 +21,8 @@ var handleFunCore=function(req, res){
 	console.log('Time:'+Time);
 	console.log('MinTime:'+MinTime);
 	console.log('MaxTime:'+MaxTime);
+	console.log('ProductType:'+ProductType);
+	console.log('Repaymentmode:'+Repaymentmode);
 	var session_id=req.query.SessionId;
 	redisStore.ttl(session_id, function(err, expireTime){
 		if(expireTime>0){
@@ -39,7 +43,9 @@ var handleFunCore=function(req, res){
 					MaxTime: MaxTime,
 					Offset: Offset,
 					Length: Length,
-					ServiceId: ServiceId
+					ServiceId: ServiceId,
+					ProductType: ProductType,
+					Repaymentmode: Repaymentmode
 				}
 			}, function(err, response, body){
 				if(!err && response.statusCode==200){

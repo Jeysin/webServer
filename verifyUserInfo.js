@@ -15,7 +15,7 @@ var verifyUserInfo=function(sessionid, openid, unionid, res){
 		if(!err && response.statusCode==200){
 			var isSuccessful=body.isSuccessful;
 			if(isSuccessful==='yes'){
-				res.json({SessionId: sessionid, Code:0, Msg:'success'});
+				res.json({Code:0, Msg:'success'});
 			}else{
 				res.json({Code:8200, Msg:'The user is not register'});
 			}
